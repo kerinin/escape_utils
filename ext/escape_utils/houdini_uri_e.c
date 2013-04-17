@@ -4,6 +4,10 @@
 
 #include "houdini.h"
 
+#define URI_E 0
+#define URL_E 1
+#define OAUTH_E 2
+
 static const char URL_SAFE[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -13,6 +17,25 @@ static const char URL_SAFE[] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 
 	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+static const char OAUTH_SAFE[] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -43,10 +66,21 @@ static const char URI_SAFE[] = {
 };
 
 static int
-escape(gh_buf *ob, const uint8_t *src, size_t size, int is_url)
+escape(gh_buf *ob, const uint8_t *src, size_t size, int type)
 {
 	static const uint8_t hex_chars[] = "0123456789ABCDEF";
-	const char *safe_table = is_url ? URL_SAFE : URI_SAFE;
+  const char *safe_table;
+  switch(type) {
+    case URL_E:
+      safe_table = URL_SAFE;
+      break;
+    case URI_E:
+      safe_table = URI_SAFE;
+      break;
+    case OAUTH_E:
+      safe_table = OAUTH_SAFE;
+      break;
+  }
 
 	size_t  i = 0, org;
 	uint8_t hex_str[3];
@@ -73,7 +107,7 @@ escape(gh_buf *ob, const uint8_t *src, size_t size, int is_url)
 		if (i >= size)
 			break;
 
-		if (src[i] == ' ' && is_url) {
+		if (src[i] == ' ' && type == URL_E) {
 			gh_buf_putc(ob, '+');
 		} else {
 			hex_str[1] = hex_chars[(src[i] >> 4) & 0xF];
@@ -90,12 +124,18 @@ escape(gh_buf *ob, const uint8_t *src, size_t size, int is_url)
 int
 houdini_escape_uri(gh_buf *ob, const uint8_t *src, size_t size)
 {
-	return escape(ob, src, size, 0);
+	return escape(ob, src, size, URI_E);
 }
 
 int
 houdini_escape_url(gh_buf *ob, const uint8_t *src, size_t size)
 {
-	return escape(ob, src, size, 1);
+	return escape(ob, src, size, URL_E);
+}
+
+int
+houdini_escape_oauth(gh_buf *ob, const uint8_t *src, size_t size)
+{
+	return escape(ob, src, size, OAUTH_E);
 }
 

@@ -31,6 +31,7 @@ extern int houdini_unescape_html(gh_buf *ob, const uint8_t *src, size_t size);
 extern int houdini_escape_xml(gh_buf *ob, const uint8_t *src, size_t size);
 extern int houdini_escape_uri(gh_buf *ob, const uint8_t *src, size_t size);
 extern int houdini_escape_url(gh_buf *ob, const uint8_t *src, size_t size);
+extern int houdini_escape_oauth(gh_buf *ob, const uint8_t *src, size_t size);
 extern int houdini_escape_href(gh_buf *ob, const uint8_t *src, size_t size);
 extern int houdini_unescape_uri(gh_buf *ob, const uint8_t *src, size_t size);
 extern int houdini_unescape_url(gh_buf *ob, const uint8_t *src, size_t size);

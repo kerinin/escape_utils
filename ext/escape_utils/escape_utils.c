@@ -204,6 +204,24 @@ static VALUE rb_eu_unescape_uri(VALUE self, VALUE str)
 
 
 /**
+ * OAUTH methods
+ */
+static VALUE rb_eu_escape_oauth(VALUE self, VALUE str)
+{
+	return rb_eu__generic(str, &houdini_escape_oauth);
+}
+
+/*
+static VALUE rb_eu_unescape_oauth(VALUE self, VALUE str)
+{
+	return rb_eu__generic(str, &houdini_unescape_oauth);
+}
+*/
+
+
+
+
+/**
  * Ruby Extension initializer
  */
 __attribute__((visibility("default")))
@@ -227,6 +245,7 @@ void Init_escape_utils()
 	rb_define_method(rb_mEscapeUtils, "unescape_url", rb_eu_unescape_url, 1);
 	rb_define_method(rb_mEscapeUtils, "escape_uri", rb_eu_escape_uri, 1);
 	rb_define_method(rb_mEscapeUtils, "unescape_uri", rb_eu_unescape_uri, 1);
+	rb_define_method(rb_mEscapeUtils, "escape_oauth", rb_eu_escape_oauth, 1);
 
 	rb_define_singleton_method(rb_mEscapeUtils, "html_secure=", rb_eu_set_html_secure, 1);
 	rb_define_singleton_method(rb_mEscapeUtils, "html_safe_string_class=", rb_eu_set_html_safe_string_class, 1);
