@@ -117,7 +117,11 @@ static VALUE rb_eu_escape_html_as_html_safe(VALUE self, VALUE str)
 		result = new_html_safe_string(RSTRING_PTR(str), RSTRING_LEN(str));
 	}
 
+#ifdef RSTRING_HTML_SAFE
+	FL_SET(result, RSTRING_HTML_SAFE);
+#else
 	rb_ivar_set(result, ID_at_html_safe, Qtrue);
+#endif
 
 	return result;
 }
@@ -202,6 +206,41 @@ static VALUE rb_eu_unescape_uri(VALUE self, VALUE str)
 	return rb_eu__generic(str, &houdini_unescape_uri);
 }
 
+#ifdef RSTRING_HTML_SAFE
+
+static VALUE str_html_safe(VALUE self)
+{
+	VALUE copy = rb_str_dup(self);
+	FL_SET(copy, RSTRING_HTML_SAFE);
+	return copy;
+}
+
+static VALUE str_html_safe_p(VALUE self)
+{
+	return FL_TEST(self, RSTRING_HTML_SAFE) ? Qtrue : Qfalse;
+}
+
+static VALUE str_gh_html_safe_bang(VALUE self)
+{
+	FL_SET(self, RSTRING_HTML_SAFE);
+	return self;
+}
+
+static VALUE str_gh_html_safe_if_bang(VALUE self, VALUE other)
+{
+	if (FL_TEST(other, RSTRING_HTML_SAFE)) {
+		FL_SET(self, RSTRING_HTML_SAFE);
+	}
+	return self;
+}
+
+static VALUE str_gh_unset_html_safe_bang(VALUE self)
+{
+	FL_UNSET(self, RSTRING_HTML_SAFE);
+	return self;
+}
+
+#endif
 
 /**
  * Ruby Extension initializer
@@ -230,5 +269,15 @@ void Init_escape_utils()
 
 	rb_define_singleton_method(rb_mEscapeUtils, "html_secure=", rb_eu_set_html_secure, 1);
 	rb_define_singleton_method(rb_mEscapeUtils, "html_safe_string_class=", rb_eu_set_html_safe_string_class, 1);
+
+#ifdef RSTRING_HTML_SAFE
+	rb_define_method(rb_cString, "html_safe", str_html_safe, 0);
+	rb_define_method(rb_cString, "html_safe?", str_html_safe_p, 0);
+
+	/* prefixed with gh_ because it's a custom extension beyond what Rails provides: */
+	rb_define_method(rb_cString, "_gh_html_safe!", str_gh_html_safe_bang, 0);
+	rb_define_method(rb_cString, "_gh_html_safe_if!", str_gh_html_safe_if_bang, 1);
+	rb_define_method(rb_cString, "_gh_unset_html_safe!", str_gh_unset_html_safe_bang, 0);
+#endif
 }
 
